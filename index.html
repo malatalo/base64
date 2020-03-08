@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <title>Base64</title>
+
+        <script type="text/javascript">
+            gen = () => {
+                const txtInput = document.getElementById("textInput").value;
+                try {
+                    document.getElementById("encodeTA").value = btoa(txtInput);
+                } catch (ex) {
+                    document.getElementById("encodeTA").value = ex.message
+                }
+
+                try{
+                    document.getElementById("decodeTA").value = atob(txtInput);
+                } catch(ex) {
+                    document.getElementById("decodeTA").value = ex.message
+                }
+            };
+
+            copyDec = () => {
+                const el = document.getElementById("decodeTA")
+                el.select()
+                document.execCommand("copy");
+                el.blur()
+            }
+
+            copyEnc = () => {
+                const el = document.getElementById("encodeTA")
+                el.select()
+                document.execCommand("copy");
+                el.blur()
+            }
+        </script>
+
+        <style>
+            html {
+                background: rgb(110, 255, 255);
+                background: radial-gradient(
+                    circle,
+                    rgba(110, 255, 255, 1) 32%,
+                    rgba(0, 229, 255, 1) 64%,
+                    rgba(0, 178, 204, 1) 88%
+                );
+                background-repeat: no-repeat;
+                height: 100%;
+            }
+
+            .container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                height: 100%;
+            }
+
+            textarea {
+                width: 350;
+                height: 125px;
+                background: rgba(255, 255, 255, 0.5);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>INPUT:</h2>
+            <textarea id="textInput" oninput="gen()"></textarea>
+            <button onclick="gen()">Base64</button>
+            <h3>Encoded:</h3>
+            <textarea id="encodeTA"></textarea>
+            <button onclick="copyEnc()">Copy</button>
+            <h3>Decoded:</h3>
+            <textarea id="decodeTA"></textarea>
+            <button onclick="copyDec()">Copy</button>
+        </div>
+    </body>
+</html>
