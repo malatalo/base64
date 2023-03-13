@@ -1,77 +1,290 @@
 <html>
-    <head>
-        <title>Base64</title>
+<head>
+  <title>Base64</title>
+  <link rel="stylesheet" href="https://unpkg.com/98.css">
+  <script type="text/javascript">
+    generateFromJson = (json) => {
+      document.getElementById("decodeTA").innerText=JSON.stringify(json, null, 2);
+      document.getElementById("encodeTA").innerText=btoa(JSON.stringify(json));
+    }
 
-        <script type="text/javascript">
-            gen = () => {
-                const txtInput = document.getElementById("textInput").value;
-                try {
-                    document.getElementById("encodeTA").value = btoa(txtInput);
-                } catch (ex) {
-                    document.getElementById("encodeTA").value = ex.message
-                }
+    generateFromText = (text) => {
+      let decodeOutput = "";
 
-                try{
-                    document.getElementById("decodeTA").value = atob(txtInput);
-                } catch(ex) {
-                    document.getElementById("decodeTA").value = ex.message
-                }
-            };
 
-            copyDec = () => {
-                const el = document.getElementById("decodeTA")
-                el.select()
-                document.execCommand("copy");
-                el.blur()
-            }
+      text.split(".").forEach((part, index, arr) => {
+        if(index !== 0) decodeOutput += ".\n"
+        let decoded = "";
 
-            copyEnc = () => {
-                const el = document.getElementById("encodeTA")
-                el.select()
-                document.execCommand("copy");
-                el.blur()
-            }
-        </script>
+        try {
+          decoded = atob(part) + "\n"
+        } catch (_) {
+          decodeOutput += "Invalid base64\n";
+          return;
+        }
 
-        <style>
-            html {
-                background: rgb(110, 255, 255);
-                background: radial-gradient(
-                    circle,
-                    rgba(110, 255, 255, 1) 32%,
-                    rgba(0, 229, 255, 1) 64%,
-                    rgba(0, 178, 204, 1) 88%
-                );
-                background-repeat: no-repeat;
-                height: 100%;
-            }
+        try {
+          decodeOutput += JSON.stringify(JSON.parse(decoded), null, 2) + "\n";
+        } catch (_) {
+          decodeOutput += decoded;
+        }
 
-            .container {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                height: 100%;
-            }
+        if(index === arr.length - 1) decodeOutput += "</div>"
 
-            textarea {
-                width: 350;
-                height: 125px;
-                background: rgba(255, 255, 255, 0.5);
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h2>INPUT:</h2>
-            <textarea id="textInput" oninput="gen()"></textarea>
-            <button onclick="gen()">Base64</button>
-            <h3>Encoded:</h3>
-            <textarea id="encodeTA"></textarea>
-            <button onclick="copyEnc()">Copy</button>
-            <h3>Decoded:</h3>
-            <textarea id="decodeTA"></textarea>
-            <button onclick="copyDec()">Copy</button>
+      })
+
+      document.getElementById("decodeTA").innerHTML=decodeOutput;
+      document.getElementById("encodeTA").innerText=btoa(text);
+    }
+
+    gen = () => {
+      console.log("gen"+Math.random())
+      const input = document.getElementById("textInput").innerText;
+
+      if(input.startsWith("Bearer ")) {
+        document.getElementById("textInput").innerHTML = "<span class='bearer-warn'>Bearer </span>" + input.slice(7);
+      }
+
+      try {
+        const parsedJson = JSON.parse(input);
+        generateFromJson(parsedJson)
+        document.getElementById("validJsonStatus").innerHTML = `json: <span class="valid-json">VALID</span>`;
+      } catch (e) {
+        generateFromText(input)
+        document.getElementById("validJsonStatus").innerHTML = `json: <span class="invalid-json">INVALID</span>`;
+      }
+
+      document.getElementById("inputLength").innerText = "Length: " + input.length;
+    };
+
+    catchPaste = (e) => {
+      e.preventDefault();
+      document.getElementById("textInput").innerText = e.clipboardData.getData("text/plain");
+      gen();
+    }
+
+    decodedToInput = () => {
+      document.getElementById("textInput").innerText = document.getElementById("decodeTA").innerText;
+      gen();
+    }
+
+    encodedToInput = () => {
+      document.getElementById("textInput").innerText = document.getElementById("encodeTA").innerText;
+      gen();
+    }
+
+    pasteInput = async () => {
+      document.getElementById("textInput").innerText = await navigator.clipboard.readText();
+      gen();
+    }
+
+    copyDec = () => {
+      navigator.clipboard.writeText(document.getElementById("decodeTA").innerText);
+    }
+
+    copyEnc = () => {
+      navigator.clipboard.writeText(document.getElementById("encodeTA").innerText);
+    }
+
+    onInputKeyDown = (e) => {
+      if (e.keyCode === 9) { // Check if the key pressed is Tab
+        e.preventDefault(); // Prevent the default behavior
+
+        const selection = window.getSelection(); // Get the current selection
+        const range = selection.getRangeAt(0); // Get the range of the selection
+
+        // Create a new text node with two spaces
+        const textNode = document.createTextNode('   ');
+
+        // Insert the new text node at the current caret position
+        range.insertNode(textNode);
+
+        // Move the caret after the inserted text
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+
+        // Collapse the selection to the caret position
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+
+    document.addEventListener("keyup", (e) => {
+      if(e.keyCode === 112) {
+        const el = document.getElementById("help");
+        if(el.style.display === "block") {
+          el.style.display = "none";
+        } else {
+          el.style.display = "block";
+        }
+      }
+    });
+  </script>
+
+  <style>
+    * {
+
+    }
+
+    body {
+      background-color: cadetblue;
+      margin: 3em;
+    }
+
+    button {
+      font-size: 1em;
+      font-family: arial,serif;
+      font-weight: 600;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100%;
+      gap: 3em;
+    }
+
+    .input-container, .encode-decode-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 50%;
+      max-width: 50%;
+    }
+
+    .encode-decode-container {
+      gap: 3em;
+    }
+
+    .decode-container {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      overflow: auto;
+    }
+
+    .textarea {
+      flex-grow: 1;
+      margin: 0 1em 1em 1em;
+      width: calc(100% - 3.5em);
+      font-family: monospace;
+      font-size: 15px;
+      appearance: none;
+      background-color: #fff;
+      word-break: break-all;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .textarea.small {
+      min-height: 3em;
+      max-height: 3em;
+    }
+
+    .textarea:focus {
+      outline: none;
+    }
+
+    .title-row {
+      height: 5em;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-evenly;
+    }
+
+    button {
+      max-height: 2em;
+    }
+
+    .valid-json {
+      font-weight: bolder;
+      color: green;
+    }
+
+    .invalid-json {
+      font-weight: bolder;
+      color: red;
+    }
+
+    .status-bar-field {
+      width: 33.33%;
+    }
+
+    #help {
+      font-size: 10em;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      -webkit-font-smoothing: none;
+      font-family: "Pixelated MS Sans Serif",Arial,serif;
+      color: red;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="input-container window">
+
+    <div class="title-bar">
+      <div class="title-bar-text">Input</div>
+      <div class="title-bar-controls">
+        <button aria-label="Help"></button>
+        <button aria-label="Close"></button>
+      </div>
+    </div>
+
+    <div class="title-row">
+      <button onclick="pasteInput()">Paste</button>
+      <h4>INPUT</h4>
+      <button onclick="gen()">(de|en)code -></button>
+    </div>
+    <pre class="textarea" contenteditable id="textInput" onkeydown="onInputKeyDown(event)" oninput="gen()" onpaste="catchPaste(event)"></pre>
+
+    <div class="status-bar">
+      <p class="status-bar-field">Press F1 for help</p>
+      <p class="status-bar-field" id="inputLength">Length: 0</p>
+      <p class="status-bar-field" id="validJsonStatus">json:</p>
+    </div>
+  </div>
+  <div class="encode-decode-container">
+    <div class="window decode-container">
+      <div class="title-bar">
+        <div class="title-bar-text">Decode</div>
+        <div class="title-bar-controls">
+          <button aria-label="Help"></button>
+          <button aria-label="Close"></button>
         </div>
-    </body>
+      </div>
+      <div class="title-row">
+        <button onclick="decodedToInput()"><- as input</button>
+        <h4>DECODED</h4>
+        <button onclick="copyDec()">Copy</button>
+      </div>
+      <pre class="textarea" id="decodeTA" readonly></pre>
+    </div>
+
+    <div class="window encode-container">
+      <div class="title-bar">
+        <div class="title-bar-text">Encode</div>
+        <div class="title-bar-controls">
+          <button aria-label="Help"></button>
+          <button aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="title-row">
+        <button onclick="encodedToInput()"><- as input</button>
+        <h4>ENCODED</h4>
+        <button onclick="copyEnc()">Copy</button>
+      </div>
+      <pre class="textarea small" id="encodeTA" readonly></pre>
+
+    </div>
+  </div>
+</div>
+<div id="help">HELP</div>
+</body>
 </html>
