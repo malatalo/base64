@@ -86,23 +86,19 @@
     }
 
     onInputKeyDown = (e) => {
-      if (e.keyCode === 9) { // Check if the key pressed is Tab
-        e.preventDefault(); // Prevent the default behavior
+      if (e.keyCode === 9) {
+        e.preventDefault();
 
-        const selection = window.getSelection(); // Get the current selection
-        const range = selection.getRangeAt(0); // Get the range of the selection
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
 
-        // Create a new text node with two spaces
-        const textNode = document.createTextNode('   ');
+        const textNode = document.createTextNode('  ');
 
-        // Insert the new text node at the current caret position
         range.insertNode(textNode);
 
-        // Move the caret after the inserted text
         range.setStartAfter(textNode);
         range.setEndAfter(textNode);
 
-        // Collapse the selection to the caret position
         selection.removeAllRanges();
         selection.addRange(range);
       }
