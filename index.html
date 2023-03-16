@@ -28,9 +28,6 @@
         } catch (_) {
           decodeOutput += decoded;
         }
-
-        if(index === arr.length - 1) decodeOutput += "</div>"
-
       })
 
       document.getElementById("decodeTA").innerHTML=decodeOutput;
@@ -38,11 +35,7 @@
     }
 
     gen = () => {
-      const input = document.getElementById("textInput").innerText;
-
-      if(input.startsWith("Bearer ")) {
-        document.getElementById("textInput").innerHTML = "<span class='bearer-warn'>Bearer </span>" + input.slice(7);
-      }
+      const input = document.getElementById("textInput").value;
 
       try {
         const parsedJson = JSON.parse(input);
@@ -56,24 +49,18 @@
       document.getElementById("inputLength").innerText = "Length: " + input.length;
     };
 
-    catchPaste = (e) => {
-      e.preventDefault();
-      document.getElementById("textInput").innerText = e.clipboardData.getData("text/plain");
-      gen();
-    }
-
     decodedToInput = () => {
-      document.getElementById("textInput").innerText = document.getElementById("decodeTA").innerText;
+      document.getElementById("textInput").value = document.getElementById("decodeTA").innerText;
       gen();
     }
 
     encodedToInput = () => {
-      document.getElementById("textInput").innerText = document.getElementById("encodeTA").innerText;
+      document.getElementById("textInput").value = document.getElementById("encodeTA").innerText;
       gen();
     }
 
     pasteInput = async () => {
-      document.getElementById("textInput").innerText = await navigator.clipboard.readText();
+      document.getElementById("textInput").value = await navigator.clipboard.readText();
       gen();
     }
 
@@ -85,27 +72,8 @@
       navigator.clipboard.writeText(document.getElementById("encodeTA").innerText);
     }
 
-    onInputKeyDown = (e) => {
-      if (e.keyCode === 9) {
-        e.preventDefault();
-
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-
-        const textNode = document.createTextNode('  ');
-
-        range.insertNode(textNode);
-
-        range.setStartAfter(textNode);
-        range.setEndAfter(textNode);
-
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }
-    }
-
-    document.addEventListener("keyup", (e) => {
-      if(e.keyCode === 112) {
+    document.addEventListener("keydown", (e) => {
+      if(e.code === 'F1') {
         const el = document.getElementById("help");
         if(el.style.display === "block") {
           el.style.display = "none";
@@ -161,7 +129,7 @@
     .textarea {
       flex-grow: 1;
       margin: 0 1em 1em 1em;
-      width: calc(100% - 3.5em);
+      width: calc(100% - 2.25em);
       font-family: monospace;
       font-size: 15px;
       appearance: none;
@@ -237,7 +205,7 @@
       <h4>INPUT</h4>
       <button onclick="gen()">(de|en)code -></button>
     </div>
-    <pre class="textarea" contenteditable id="textInput" onkeydown="onInputKeyDown(event)" oninput="gen()" onpaste="catchPaste(event)"></pre>
+    <textarea class="textarea" id="textInput" oninput="gen()"></textarea>
 
     <div class="status-bar">
       <p class="status-bar-field">Press F1 for help</p>
@@ -259,7 +227,7 @@
         <h4>DECODED</h4>
         <button onclick="copyDec()">Copy</button>
       </div>
-      <pre class="textarea" id="decodeTA" readonly></pre>
+      <textarea class="textarea" id="decodeTA" readonly></textarea>
     </div>
 
     <div class="window encode-container">
@@ -275,11 +243,28 @@
         <h4>ENCODED</h4>
         <button onclick="copyEnc()">Copy</button>
       </div>
-      <pre class="textarea small" id="encodeTA" readonly></pre>
+      <textarea class="textarea small" id="encodeTA" readonly></textarea>
 
     </div>
   </div>
 </div>
 <div id="help">HELP</div>
+<script>
+  const inputEl = document.getElementById("textInput");
+  inputEl.addEventListener("keydown", (e) => {
+    if(e.code === "Tab") {
+      e.preventDefault();
+      const spaces = "  ";
+
+      if (inputEl.selectionStart || inputEl.selectionStart === '0') {
+        inputEl.value = inputEl.value.substring(0, inputEl.selectionStart)
+          + spaces
+          + inputEl.value.substring(inputEl.selectionEnd, inputEl.value.length);
+      } else {
+        inputEl.value += spaces;
+      }
+    }
+  })
+</script>
 </body>
 </html>
