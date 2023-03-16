@@ -4,8 +4,8 @@
   <link rel="stylesheet" href="https://unpkg.com/98.css">
   <script type="text/javascript">
     generateFromJson = (json) => {
-      document.getElementById("decodeTA").innerText=JSON.stringify(json, null, 2);
-      document.getElementById("encodeTA").innerText=btoa(JSON.stringify(json));
+      document.getElementById("decodeTA").value=JSON.stringify(json, null, 2);
+      document.getElementById("encodeTA").value=btoa(JSON.stringify(json));
     }
 
     generateFromText = (text) => {
@@ -30,8 +30,8 @@
         }
       })
 
-      document.getElementById("decodeTA").innerHTML=decodeOutput;
-      document.getElementById("encodeTA").innerText=btoa(text);
+      document.getElementById("decodeTA").value=decodeOutput;
+      document.getElementById("encodeTA").value=btoa(text);
     }
 
     gen = () => {
@@ -50,12 +50,12 @@
     };
 
     decodedToInput = () => {
-      document.getElementById("textInput").value = document.getElementById("decodeTA").innerText;
+      document.getElementById("textInput").value = document.getElementById("decodeTA").value;
       gen();
     }
 
     encodedToInput = () => {
-      document.getElementById("textInput").value = document.getElementById("encodeTA").innerText;
+      document.getElementById("textInput").value = document.getElementById("encodeTA").value;
       gen();
     }
 
@@ -64,12 +64,23 @@
       gen();
     }
 
-    copyDec = () => {
-      navigator.clipboard.writeText(document.getElementById("decodeTA").innerText);
+    copyDec = (singleLine = true) => {
+      let text = document.getElementById("decodeTA").value
+
+      if(singleLine) {
+        try {
+          const parsed = JSON.parse(text);
+          text = JSON.stringify(parsed);
+        } catch(e) {
+          text = text.replace(/\n/gm, "");
+        }
+      }
+
+      navigator.clipboard.writeText(text);
     }
 
     copyEnc = () => {
-      navigator.clipboard.writeText(document.getElementById("encodeTA").innerText);
+      navigator.clipboard.writeText(document.getElementById("encodeTA").value);
     }
 
     document.addEventListener("keydown", (e) => {
@@ -225,7 +236,8 @@
       <div class="title-row">
         <button onclick="decodedToInput()"><- as input</button>
         <h4>DECODED</h4>
-        <button onclick="copyDec()">Copy</button>
+        <button onclick="copyDec()">Copy single line</button>
+        <button onclick="copyDec(false)">Copy multi line</button>
       </div>
       <textarea class="textarea" id="decodeTA" readonly></textarea>
     </div>
